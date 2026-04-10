@@ -56,7 +56,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <span class="text-2xl mr-2">🗳️</span>
-                    <span class="font-bold text-xl text-indigo-900 tracking-tight">B24 Election</span>
+                    <span class="font-bold text-xl text-indigo-900 tracking-tight">FIT B24 Election ~ UOM</span>
                 </div>
                 <div class="flex items-center space-x-4 md:space-x-8">
                     <a href="#overview" class="nav-link active text-sm md:text-base text-slate-500 hover:text-indigo-600 px-1 py-5 transition-colors">Overview</a>
@@ -77,7 +77,7 @@
                         As our journey in Level 1 comes to a close, it’s time for a new team to step up and lead the batch forward! 🚀 Read the guide, check the nominees, and cast your vote.
                     </p>
                     <div class="flex flex-wrap gap-4">
-                        <a href="#" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2">
+                        <a href="https://forms.gle/eDYLS5K3yRZWH2Jr5" target="_blank" id="voting-btn" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2">
                             <span>🗳️</span> Go to Voting Form
                         </a>
                         <div class="bg-indigo-800/50 backdrop-blur-sm border border-indigo-500/30 py-3 px-6 rounded-lg flex items-center gap-2 text-indigo-50 font-medium">
@@ -98,14 +98,16 @@
         <section id="rules" class="scroll-mt-20">
             <div class="mb-8">
                 <h2 class="text-3xl font-bold text-slate-900 mb-2">⚖️ Rules & Eligibility</h2>
-                <p class="text-slate-600 text-lg">Understand the guidelines to ensure a fair and transparent election process. Read these carefully before voting.</p>
+                <p class="text-slate-600 text-lg">Understand the guidelines to ensure a fair and transparent election process. Read these carefully before voting. <br>
+                    🛑 It is strictly prohibited to share this form with any batch or faculty other than B24 FIT.
+                </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 hover:shadow-md transition-shadow border-b-4 border-b-blue-500">
                     <div class="text-4xl mb-4 bg-slate-50 w-16 h-16 flex items-center justify-center rounded-xl">🎓</div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">B24 Only</h3>
-                    <p class="text-slate-600">Only currently enrolled B24 students are eligible to cast a vote in this election.</p>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">FIT B24 Only</h3>
+                    <p class="text-slate-600">Only currently enrolled B24 students of FIT are eligible to cast a vote in this election.</p>
                 </div>
                 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-yellow-100 hover:shadow-md transition-shadow border-b-4 border-b-yellow-500">
@@ -151,8 +153,8 @@
                             <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Varying Limits</span>
                         </h4>
                         <ul class="text-sm text-slate-600 mt-2 space-y-2">
-                            <li><strong>Males (Vote for 2):</strong> All 5 boys have secured a spot (we need 5), but this vote determines the <strong> Main Batch Rep </strong>. He will also be the <strong>IT main Rep</strong>.</li>
-                            <li><strong>Females (Vote Top 3):</strong> Out of the 5 nominees, 3 will be selected.</li>
+                            <li><strong>Males (Vote Top 2):</strong> All 5 boys have secured a spot (we need 5), but this vote determines the <strong> Main Batch Rep </strong>. He will also be the <strong>IT main Rep</strong>.</li>
+                            <li><strong>Females (Vote Top 3):</strong> Out of the 5 nominees, 3 will be selected. (Two Sinhala girls and one Tamil girl, based on the highest number of votes received)</li>
                         </ul>
                     </div>
 
@@ -162,7 +164,7 @@
                             <span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded">Varying Limits</span>
                         </h4>
                         <ul class="text-sm text-slate-600 mt-2 space-y-2">
-                            <li><strong>Males (Vote for 1):</strong> All 3 boys have secured a spot (we need 3), but this decides the Main ITM Rep.</li>
+                            <li><strong>Males (Vote for 1):</strong> All 3 boys have secured a spot (we need 3), but this decides the <strong>Main ITM Rep</strong> .</li>
                             <li><strong>Females (Vote Top 2):</strong> Out of the 3 nominees, 2 will be selected.</li>
                         </ul>
                     </div>
@@ -356,28 +358,44 @@
 
             const countdownElement = document.getElementById('countdown-timer');
             
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(20, 0, 0, 0); 
+            const tomorrow8AM = new Date();
+            tomorrow8AM.setDate(tomorrow8AM.getDate() + 1);
+            tomorrow8AM.setHours(8, 0, 0, 0);
+
+            const tomorrow8PM = new Date();
+            tomorrow8PM.setDate(tomorrow8PM.getDate() + 1);
+            tomorrow8PM.setHours(20, 0, 0, 0);
 
             function updateTimer() {
                 const now = new Date().getTime();
-                const distance = tomorrow.getTime() - now;
-
-                if (distance < 0) {
+                
+                if (now < tomorrow8AM.getTime()) {
+                    const distance = tomorrow8AM.getTime() - now;
+                    const hours = Math.floor(distance / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    countdownElement.innerText = `Vote will open in ${hours}h ${minutes}m ${seconds}s`;
+                } else if (now < tomorrow8PM.getTime()) {
+                    const distance = tomorrow8PM.getTime() - now;
+                    const hours = Math.floor(distance / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    countdownElement.innerText = `Closes in ${hours}h ${minutes}m ${seconds}s`;
+                } else {
                     countdownElement.innerText = "ELECTION CLOSED";
-                    return;
                 }
-
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                countdownElement.innerText = `Closes in ${hours}h ${minutes}m ${seconds}s`;
             }
 
             setInterval(updateTimer, 1000);
             updateTimer();
+
+            const votingBtn = document.getElementById('voting-btn');
+            votingBtn.addEventListener('click', (e) => {
+                if (new Date().getTime() < tomorrow8AM.getTime()) {
+                    e.preventDefault();
+                    alert("Vote will open at 8 AM tomorrow.");
+                }
+            });
 
             const sections = document.querySelectorAll('section');
             const navLinks = document.querySelectorAll('.nav-link');
