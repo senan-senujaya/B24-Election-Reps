@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B24 Level 2 Election Portal</title>
+    
+    <!-- Chosen Palette: Warm Neutrals & Deep Indigo (Slate-50 bg, Slate-800 text, Indigo-700 primary, Amber-500 accent for highlights) -->
+    <!-- Application Structure Plan: The SPA uses a single-page dashboard structure optimized for task completion and information discovery. Users first encounter the 'Hero' with immediate action (Voting Link & Countdown) to establish urgency. The 'Election Rules' are presented in scannable cards to ensure high comprehension. The 'Voting Mechanics' section uses a visual chart to explain the complex seat allocation, transforming dense text into intuitive visual data. Finally, the 'Candidate Explorer' provides an interactive, filterable directory of nominees, allowing users to research their options cleanly before voting. This structure prioritizes user understanding of the *process* before presenting the *choices*. -->
+    <!-- Visualization & Content Choices: 1. Rules & Mechanics -> Goal: Inform & Instruct -> Presentation: Grid Cards with Unicode Icons -> Justification: Breaks down dense text into digestible, distinct rules. 2. Seat Allocation Data -> Goal: Compare (Nominated vs Required) -> Presentation: Chart.js Bar Chart -> Justification: Visually justifies the specific voting limits (e.g., why users vote for top 2 out of 5 IT males) making the process transparent. Library: Chart.js (Canvas). 3. Candidate List -> Goal: Organize & Explore -> Presentation: Interactive CSS Grid with JS Filtering -> Justification: Allows users to focus on specific degrees or cohorts without scrolling through a massive list. Confirming NO SVG/Mermaid is used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        .nav-link.active {
+            color: #4338ca;
+            border-bottom: 2px solid #4338ca;
+            font-weight: 600;
+        }
+
+        .filter-btn.active {
+            background-color: #4338ca;
+            color: white;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-2">🗳️</span>
+                    <span class="font-bold text-xl text-indigo-900 tracking-tight">FIT B24 Election</span>
+                </div>
+                <div class="flex items-center space-x-4 md:space-x-8">
+                    <a href="#overview" class="nav-link active text-sm md:text-base text-slate-500 hover:text-indigo-600 px-1 py-5 transition-colors">Overview</a>
+                    <a href="#rules" class="nav-link text-sm md:text-base text-slate-500 hover:text-indigo-600 px-1 py-5 transition-colors">Rules & Mechanics</a>
+                    <a href="#candidates" class="nav-link text-sm md:text-base text-slate-500 hover:text-indigo-600 px-1 py-5 transition-colors">Candidates</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <section id="overview" class="scroll-mt-20">
+            <div class="bg-indigo-700 rounded-3xl p-8 md:p-12 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="flex-1">
+                    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Level 2 Representative Election</h1>
+                    <p class="text-indigo-100 text-lg mb-6 max-w-2xl leading-relaxed">
+                        As our journey in Level 1 comes to a close, it’s time for a new team to step up and lead the batch forward! 🚀 Read the guide, check the nominees, and cast your vote.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="index.html" id="voting-btn" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2">
+                            <span>🎉</span> View Official Results
+                        </a>
+                        <div class="bg-indigo-800/50 backdrop-blur-sm border border-indigo-500/30 py-3 px-6 rounded-lg flex items-center gap-2 text-indigo-50 font-medium">
+                            <span>⏱️</span> <span id="countdown-timer">Loading timer...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hidden lg:flex flex-col items-center justify-center bg-white/10 p-8 rounded-2xl border border-white/20 backdrop-blur-md">
+                    <span class="text-6xl mb-4">🎓</span>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold">18</div>
+                        <div class="text-indigo-200 text-sm uppercase tracking-wider font-semibold">Total Nominees</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="rules" class="scroll-mt-20">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">⚖️ Rules & Eligibility</h2>
+                <p class="text-slate-600 text-lg">Understand the guidelines to ensure a fair and transparent election process. Read these carefully before voting. <br>
+                    🛑 It is strictly prohibited to share this form with any batch or faculty other than B24 FIT.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 hover:shadow-md transition-shadow border-b-4 border-b-blue-500">
+                    <div class="text-4xl mb-4 bg-slate-50 w-16 h-16 flex items-center justify-center rounded-xl">🎓</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">FIT B24 Only</h3>
+                    <p class="text-slate-600">Only currently enrolled B24 students of FIT are eligible to cast a vote in this election.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-yellow-100 hover:shadow-md transition-shadow border-b-4 border-b-yellow-500">
+                    <div class="text-4xl mb-4 bg-slate-50 w-16 h-16 flex items-center justify-center rounded-xl">☝️</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">One Vote Per Person</h3>
+                    <p class="text-slate-600">You must sign in to your Google Account to access the form. You may only submit the form once.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-green-100 hover:shadow-md transition-shadow border-b-4 border-b-green-500">
+                    <div class="text-4xl mb-4 bg-slate-50 w-16 h-16 flex items-center justify-center rounded-xl">🪪</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Verification Required</h3>
+                    <p class="text-slate-600">You must enter your correct Index Number, Full Name, and upload a clear photo of your Student ID card.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-50 hover:shadow-md transition-shadow border-b-4 border-b-red-500">
+                    <div class="text-4xl mb-4 bg-red-50 w-16 h-16 flex items-center justify-center rounded-xl">🛑</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Zero Tolerance</h3>
+                    <p class="text-slate-600">Any duplicate votes, false index numbers, or incorrect details will lead to immediate disqualification.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">📊 Voting Mechanics Explained</h2>
+                <p class="text-slate-600 text-lg">Because the number of nominees differs from the required representatives per degree, specific voting limits are enforced to determine the Main Representatives. The male and female candidates with the highest number of votes will be selected as the main batch representatives.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    
+                    <div class="bg-slate-50 p-5 rounded-xl border-l-4 border-indigo-500">
+                        <h4 class="font-bold text-indigo-900 flex justify-between items-center">
+                            <span>🧠 Artificial Intelligence (AI)</span>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded">Vote for 1</span>
+                        </h4>
+                        <p class="text-sm text-slate-600 mt-2">Both nominees are guaranteed a spot, but your vote decides the <strong>Main AI Rep</strong>.</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-5 rounded-xl border-l-4 border-blue-500">
+                        <h4 class="font-bold text-blue-900 flex justify-between items-center">
+                            <span>💻 Information Technology (IT)</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Varying Limits</span>
+                        </h4>
+                        <ul class="text-sm text-slate-600 mt-2 space-y-2">
+                            <li><strong>Males (Vote Top 2):</strong> All 5 boys have secured a spot (we need 5), but this vote determines the <strong> Main Batch Rep </strong>. He will also be the <strong>IT main Rep</strong>.</li>
+                            <li><strong>Females (Vote Top 3):</strong> Out of the 5 nominees, 3 will be selected.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-50 p-5 rounded-xl border-l-4 border-emerald-500">
+                        <h4 class="font-bold text-emerald-900 flex justify-between items-center">
+                            <span>👩‍💻 Information Technology & Management (ITM)</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded">Varying Limits</span>
+                        </h4>
+                        <ul class="text-sm text-slate-600 mt-2 space-y-2">
+                            <li><strong>Males (Vote for 1):</strong> All 3 boys have secured a spot (we need 3), but this decides the <strong>Main ITM Rep</strong> .</li>
+                            <li><strong>Females (Vote Top 2):</strong> Out of the 3 nominees, 2 will be selected.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="w-full bg-slate-50 p-4 rounded-2xl">
+                    <div class="chart-container">
+                        <canvas id="mechanicsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="candidates" class="scroll-mt-20">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">👥 Meet Your Candidates</h2>
+                    <p class="text-slate-600 text-lg">Explore the 18 nominees. You can filter by degree program.</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
+                    <button class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-filter="All">All</button>
+                    <button class="filter-btn text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-filter="AI">AI</button>
+                    <button class="filter-btn text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-filter="IT">IT</button>
+                    <button class="filter-btn text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-filter="ITM">ITM</button>
+                </div>
+            </div>
+
+            <div id="candidates-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-12 text-center mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="mb-2 text-lg">Let’s build a strong and active team for Level 2! Your vote matters. 💪🔥</p>
+            <p class="text-sm text-slate-500">- Senan Senujaya ~ Main Batch Rep ~ Level 1 - </p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const state = {
+                filter: 'All'
+            };
+
+            const candidates = [
+                { name: "Thesuru Praneeth", index: "245509A", degree: "AI", gender: "Male", image: "images/praneeth.jpeg" },
+                { name: "Sivasampu Varmina", index: "245543V", degree: "AI", gender: "Female", image: "images/sivasampu.jpg" },
+                { name: "Hirun Kavinda Jayalath", index: "244082X", degree: "IT", gender: "Male", image: "images/hirun.jpg" },
+                { name: "Chawheethaa Nallainathan", index: "244246F", degree: "IT", gender: "Female", image: "images/chawheethaa.jpg" },
+                { name: "Kumararajah Bagushanrajh", index: "244028N", degree: "IT", gender: "Male", image: "images/bagushan.jpeg" },
+                { name: "Nesarasa Santhuru", index: "244192J", degree: "IT", gender: "Male", image: "images/santhuru.jpeg" },
+                { name: "Sanduni Kaushalya Wijesiri", index: "244230C", degree: "IT", gender: "Female", image: "images/sanduni.jpeg" },
+                { name: " Tihara Kalhari", index: "244096T", degree: "IT", gender: "Female", image: "images/tihara.jpg" },
+                { name: "Pasan Rajinda", index: "244165F", degree: "IT", gender: "Male", image: "images/pasan.jpeg" },
+                { name: "Kumudya Gnanaweera", index: "244065A", degree: "IT", gender: "Female", image: "images/kumudya.jpg" },
+                { name: "Dilki Nimeshika", index: "244144P", degree: "IT", gender: "Female", image: "images/dilki.JPG" },
+                { name: "Thejaka Perera", index: "244195V", degree: "IT", gender: "Male", image: "images/thejaka.jpg" },
+                { name: "Sandun Tharaka", index: "245129H", degree: "ITM", gender: "Male", image: "images/sandun.jpg" },
+                { name: "Fathima Zaara", index: "245121C", degree: "ITM", gender: "Female", image: "images/zaara.jpg" },
+                { name: "Agassi Marriott Croos", index: "245016J", degree: "ITM", gender: "Male", image: "images/agassi.jpeg" },
+                { name: "Subramaniyam Prashnidha", index: "245079D", degree: "ITM", gender: "Female", image: "images/prasnida.jpeg" },
+                { name: "Nisumi Nelithma", index: "245057J", degree: "ITM", gender: "Female", image: "images/nelithma.JPG" },
+                { name: "Vishwa Madushanka", index: "245073E", degree: "ITM", gender: "Male", image: "images/madushanka.jpeg" }
+            ];
+
+            const grid = document.getElementById('candidates-grid');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            function getInitials(name) {
+                return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            }
+
+            function getDegreeColor(degree) {
+                if(degree === 'AI') return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                if(degree === 'IT') return 'bg-blue-100 text-blue-800 border-blue-200';
+                if(degree === 'ITM') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                return 'bg-gray-100 text-gray-800';
+            }
+
+            function renderCandidates(filter) {
+                grid.innerHTML = '';
+                const filtered = filter === 'All' ? candidates : candidates.filter(c => c.degree === filter);
+                
+                filtered.forEach(candidate => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col items-center text-center hover:shadow-lg transition-all transform hover:-translate-y-1';
+                    
+                    const fallbackIcon = candidate.gender === 'Male' ? '👦🏽' : '👧🏽';
+
+                    card.innerHTML = `
+                        <div class="w-full aspect-square rounded-xl overflow-hidden mb-4 bg-slate-100 border border-slate-200 shadow-sm">
+                            <img
+                                src="${candidate.image}"
+                                alt="Photo of ${candidate.name}"
+                                class="w-full h-full object-cover object-top"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            />
+                            <div class="w-full h-full hidden items-center justify-center text-5xl bg-slate-100">${fallbackIcon}</div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold border mb-3 ${getDegreeColor(candidate.degree)}">
+                            ${candidate.degree} Candidate
+                        </span>
+                        <h3 class="font-bold text-slate-900 text-base leading-tight mb-1">${candidate.name}</h3>
+                        <p class="text-sm font-mono text-slate-500 bg-slate-50 px-2 py-1 rounded">${candidate.index}</p>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    filterBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-indigo-600', 'text-white');
+                        b.classList.add('text-slate-600', 'hover:bg-slate-100');
+                    });
+                    
+                    e.target.classList.add('active', 'bg-indigo-600', 'text-white');
+                    e.target.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                    
+                    state.filter = e.target.getAttribute('data-filter');
+                    renderCandidates(state.filter);
+                });
+            });
+
+            renderCandidates(state.filter);
+
+            const ctx = document.getElementById('mechanicsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['AI All', 'IT Males', 'IT Females', 'ITM Males', 'ITM Females'],
+                    datasets: [
+                        {
+                            label: 'Total Nominated',
+                            data: [2, 5, 5, 3, 3],
+                            backgroundColor: 'rgba(99, 102, 241, 0.8)', 
+                            borderRadius: 6,
+                            borderWidth: 0
+                        },
+                        {
+                            label: 'Seats Required',
+                            data: [2, 5, 3, 3, 2],
+                            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                            borderRadius: 6,
+                            borderWidth: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { family: 'Inter', size: 13 } } },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: 'Inter', size: 14 },
+                            bodyFont: { family: 'Inter', size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const label = context[0].label;
+                                    if(label === 'AI All') return '\nRule: Vote for your top 1 choice\nto decide Main AI Rep.';
+                                    if(label === 'IT Males') return '\nRule: Vote for your top 2 choices\nto decide Main IT Rep.';
+                                    if(label === 'IT Females') return '\nRule: Vote for your top 3 choices\nto eliminate 2 candidates.';
+                                    if(label === 'ITM Males') return '\nRule: Vote for your #1 choice\nto decide Main ITM Rep.';
+                                    if(label === 'ITM Females') return '\nRule: Vote for your top 2 choices\nto eliminate 1 candidate.';
+                                    return '';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 6,
+                            ticks: { stepSize: 1, font: { family: 'Inter' } },
+                            grid: { color: 'rgba(226, 232, 240, 0.5)' }
+                        },
+                        x: {
+                            ticks: { font: { family: 'Inter' } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            const countdownElement = document.getElementById('countdown-timer');
+            
+            const tomorrow8AM = new Date('April 11, 2026 08:00:00');
+
+            const tomorrow8PM = new Date('April 11, 2026 20:00:00');
+
+            function updateTimer() {
+                const now = new Date().getTime();
+                
+                if (now < tomorrow8AM.getTime()) {
+                    const distance = tomorrow8AM.getTime() - now;
+                    const hours = Math.floor(distance / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    if (days > 0) {
+                        countdownElement.innerText = `Vote will open in ${days}d ${hours%24}h ${minutes}m ${seconds}s`;
+                    } else {
+                        countdownElement.innerText = `Vote will open in ${hours}h ${minutes}m ${seconds}s`;
+                    }
+                } else if (now < tomorrow8PM.getTime()) {
+                    const distance = tomorrow8PM.getTime() - now;
+                    const hours = Math.floor(distance / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    countdownElement.innerText = `Closes in ${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    countdownElement.innerText = "ELECTION CLOSED";
+                }
+            }
+
+            setInterval(updateTimer, 1000);
+            updateTimer();
+
+            const votingBtn = document.getElementById('voting-btn');
+            votingBtn.addEventListener('click', (e) => {
+                if (new Date().getTime() < tomorrow8AM.getTime()) {
+                    e.preventDefault();
+                    alert("Vote will open at 8 AM on April 11.");
+                }
+            });
+
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (scrollY >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active', 'text-indigo-600', 'font-semibold', 'border-b-2', 'border-indigo-600');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active', 'text-indigo-600', 'font-semibold', 'border-b-2', 'border-indigo-600');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
